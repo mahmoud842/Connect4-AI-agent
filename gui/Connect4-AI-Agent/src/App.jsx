@@ -2,7 +2,7 @@ import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import GameConfig from "./components/GameConfig";
 import GameBoard from "./components/GameBoard";
-import TreeVisualization from "./pages/TreeVisualization";
+import TreeVisualization from "./pages/TreeVisualizationNew";
 import "./App.css";
 
 function App() {

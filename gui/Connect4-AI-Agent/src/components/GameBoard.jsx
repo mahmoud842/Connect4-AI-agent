@@ -2,11 +2,11 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./GameBoard.css";
 
-const ROWS = 6;
-const COLS = 7;
-
 function GameBoard({ config, onBack }) {
   const navigate = useNavigate();
+  const ROWS = config.boardHeight || 6;
+  const COLS = config.boardWidth || 7;
+  
   const [board, setBoard] = useState(
     Array(ROWS)
       .fill()
@@ -272,7 +272,7 @@ function GameBoard({ config, onBack }) {
       <div className="board-wrapper">
         <div className="connect4-board">
           {/* Columns */}
-          <div className="board-columns">
+          <div className="board-columns" style={{ '--cols': COLS }}>
             {Array(COLS)
               .fill()
               .map((_, col) => (

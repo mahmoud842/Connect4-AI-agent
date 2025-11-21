@@ -5,27 +5,74 @@ function GameConfig({ onStartGame }) {
   const [algorithm, setAlgorithm] = useState("minimax");
   const [useAlphaBeta, setUseAlphaBeta] = useState(false);
   const [firstPlayer, setFirstPlayer] = useState("ai");
+  const [boardWidth, setBoardWidth] = useState(7);
+  const [boardHeight, setBoardHeight] = useState(6);
+  const [error, setError] = useState("");
 
   const handleStartGame = () => {
+    // Validate board dimensions
+    if (boardWidth < 7) {
+      setError("Width must be at least 7");
+      return;
+    }
+    if (boardHeight < 6) {
+      setError("Height must be at least 6");
+      return;
+    }
+    setError("");
+    
     onStartGame({
       algorithm,
       useAlphaBeta,
       firstPlayer,
+      boardWidth: parseInt(boardWidth),
+      boardHeight: parseInt(boardHeight),
     });
   };
 
   return (
     <div className="game-config">
       <div className="config-container">
-        <h1 className="game-title">Connect 4 AI</h1>
-        <p className="game-subtitle">Configure Your Game</p>
+        <div className="config-header">
+          <h1 className="game-title">🎮 Connect 4 AI</h1>
+          <p className="game-subtitle">Configure your ultimate game experience</p>
+        </div>
 
-        <div className="config-options">
+        <div className="config-grid">
+          {/* Board Size Section */}
+          <div className="config-section board-size-section">
+            <h3>📐 Board Size</h3>
+            <div className="size-inputs">
+              <div className="input-group">
+                <label>Width (≥7)</label>
+                <input
+                  type="number"
+                  min="7"
+                  value={boardWidth}
+                  onChange={(e) => setBoardWidth(e.target.value)}
+                  className="size-input"
+                />
+              </div>
+              <div className="input-group">
+                <label>Height (≥6)</label>
+                <input
+                  type="number"
+                  min="6"
+                  value={boardHeight}
+                  onChange={(e) => setBoardHeight(e.target.value)}
+                  className="size-input"
+                />
+              </div>
+            </div>
+            {error && <div className="error-message">{error}</div>}
+          </div>
+
+          {/* Algorithm Section */}
           <div className="config-section">
-            <h3>Algorithm</h3>
-            <div className="option-group">
+            <h3>🧠 Algorithm</h3>
+            <div className="option-group horizontal">
               <label
-                className={`option-card ${
+                className={`option-card compact ${
                   algorithm === "minimax" ? "selected" : ""
                 }`}
               >
@@ -40,15 +87,12 @@ function GameConfig({ onStartGame }) {
                   <div className="option-icon">🎯</div>
                   <div className="option-text">
                     <div className="option-title">Minimax</div>
-                    <div className="option-description">
-                      Classic game tree search
-                    </div>
                   </div>
                 </div>
               </label>
 
               <label
-                className={`option-card ${
+                className={`option-card compact ${
                   algorithm === "expectiminimax" ? "selected" : ""
                 }`}
               >
@@ -63,19 +107,17 @@ function GameConfig({ onStartGame }) {
                   <div className="option-icon">🎲</div>
                   <div className="option-text">
                     <div className="option-title">Expectiminimax</div>
-                    <div className="option-description">
-                      Handles probabilistic outcomes
-                    </div>
                   </div>
                 </div>
               </label>
             </div>
           </div>
 
+          {/* Alpha-Beta Section */}
           <div className="config-section">
-            <h3>Optimization</h3>
+            <h3>⚡ Optimization</h3>
             <label
-              className={`option-card checkbox-card ${
+              className={`option-card compact checkbox-card ${
                 useAlphaBeta ? "selected" : ""
               }`}
             >
@@ -88,19 +130,17 @@ function GameConfig({ onStartGame }) {
                 <div className="option-icon">⚡</div>
                 <div className="option-text">
                   <div className="option-title">Alpha-Beta Pruning</div>
-                  <div className="option-description">
-                    Optimize search by pruning branches
-                  </div>
                 </div>
               </div>
             </label>
           </div>
 
+          {/* Who Starts Section */}
           <div className="config-section">
-            <h3>Who Starts?</h3>
-            <div className="option-group">
+            <h3>🎲 First Move</h3>
+            <div className="option-group horizontal">
               <label
-                className={`option-card ${
+                className={`option-card compact ${
                   firstPlayer === "ai" ? "selected" : ""
                 }`}
               >
@@ -115,15 +155,12 @@ function GameConfig({ onStartGame }) {
                   <div className="option-icon">🤖</div>
                   <div className="option-text">
                     <div className="option-title">AI First</div>
-                    <div className="option-description">
-                      AI makes the first move
-                    </div>
                   </div>
                 </div>
               </label>
 
               <label
-                className={`option-card ${
+                className={`option-card compact ${
                   firstPlayer === "human" ? "selected" : ""
                 }`}
               >
@@ -138,9 +175,6 @@ function GameConfig({ onStartGame }) {
                   <div className="option-icon">👤</div>
                   <div className="option-text">
                     <div className="option-title">Human First</div>
-                    <div className="option-description">
-                      You make the first move
-                    </div>
                   </div>
                 </div>
               </label>
@@ -149,7 +183,8 @@ function GameConfig({ onStartGame }) {
         </div>
 
         <button className="start-button" onClick={handleStartGame}>
-          Start Game
+          <span className="button-icon">🚀</span>
+          <span>Launch Game</span>
         </button>
       </div>
     </div>
