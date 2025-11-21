@@ -2,109 +2,164 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./GameBoard.css";
 
-function GameBoard({ config, onBack }) {
+function GameBoard({ config, onBack, initialGameState, onGameStateChange }) {
   const navigate = useNavigate();
   const ROWS = config.boardHeight || 6;
   const COLS = config.boardWidth || 7;
+  const K = config.k || 4; // Get K from config
 
   const [board, setBoard] = useState(
-    Array(ROWS)
-      .fill()
-      .map(() => Array(COLS).fill(null))
+    initialGameState?.board ||
+      Array(ROWS)
+        .fill()
+        .map(() => Array(COLS).fill(null))
   );
   const [currentPlayer, setCurrentPlayer] = useState(
-    config.firstPlayer === "human" ? "human" : "ai"
+    initialGameState?.currentPlayer ||
+      (config.firstPlayer === "human" ? "human" : "ai")
   );
-  const [gameOver, setGameOver] = useState(false);
-  const [winner, setWinner] = useState(null);
-  const [score, setScore] = useState({ human: 0, ai: 0 });
+  const [gameOver, setGameOver] = useState(initialGameState?.gameOver || false);
+  const [winner, setWinner] = useState(initialGameState?.winner || null);
+  const [score, setScore] = useState(
+    initialGameState?.score || { human: 0, ai: 0 }
+  );
   const [animatingColumn, setAnimatingColumn] = useState(null);
   const [animatingRow, setAnimatingRow] = useState(null);
-  const [lastMove, setLastMove] = useState(null);
+  const [lastMove, setLastMove] = useState(initialGameState?.lastMove || null);
 
-  // Play drop sound
+  // Save game state whenever it changes
+  useEffect(() => {
+    if (onGameStateChange) {
+      onGameStateChange({
+        board,
+        currentPlayer,
+        gameOver,
+        winner,
+        score,
+        lastMove,
+      });
+    }
+  }, [board, currentPlayer, gameOver, winner, score, lastMove]);
+
+  // Play drop sound - clean plastic click
   const playDropSound = () => {
-    // Create a simple beep sound using Web Audio API
     const audioContext = new (window.AudioContext ||
       window.webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
+    const now = audioContext.currentTime;
 
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-
-    oscillator.frequency.value = 400;
-    oscillator.type = "sine";
-
-    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(
-      0.01,
-      audioContext.currentTime + 0.3
+    // Short burst of filtered noise for plastic "click"
+    const bufferSize = audioContext.sampleRate * 0.05;
+    const buffer = audioContext.createBuffer(
+      1,
+      bufferSize,
+      audioContext.sampleRate
     );
+    const data = buffer.getChannelData(0);
 
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.3);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = Math.random() * 2 - 1;
+    }
+
+    const noise = audioContext.createBufferSource();
+    noise.buffer = buffer;
+
+    // High-pass filter to remove sandy low frequencies
+    const highpass = audioContext.createBiquadFilter();
+    highpass.type = "highpass";
+    highpass.frequency.value = 3000;
+    highpass.Q.value = 0.5;
+
+    // Sharp envelope for crisp plastic click
+    const envelope = audioContext.createGain();
+    envelope.gain.setValueAtTime(0.4, now);
+    envelope.gain.exponentialRampToValueAtTime(0.01, now + 0.04);
+
+    noise.connect(highpass);
+    highpass.connect(envelope);
+    envelope.connect(audioContext.destination);
+
+    noise.start(now);
+    noise.stop(now + 0.05);
   };
 
-  // Check for winner
+  // Count pieces for score calculation
+  const countPieces = (board, player) => {
+    let count = 0;
+    for (let row = 0; row < ROWS; row++) {
+      for (let col = 0; col < COLS; col++) {
+        if (board[row][col] === player) count++;
+      }
+    }
+    return count;
+  };
+
+  // Check for winner (using K from config)
   const checkWinner = (board) => {
     // Check horizontal
     for (let row = 0; row < ROWS; row++) {
-      for (let col = 0; col < COLS - 3; col++) {
-        if (
-          board[row][col] &&
-          board[row][col] === board[row][col + 1] &&
-          board[row][col] === board[row][col + 2] &&
-          board[row][col] === board[row][col + 3]
-        ) {
-          return board[row][col];
+      for (let col = 0; col <= COLS - K; col++) {
+        if (board[row][col]) {
+          let match = true;
+          for (let i = 1; i < K; i++) {
+            if (board[row][col] !== board[row][col + i]) {
+              match = false;
+              break;
+            }
+          }
+          if (match) return board[row][col];
         }
       }
     }
 
     // Check vertical
     for (let col = 0; col < COLS; col++) {
-      for (let row = 0; row < ROWS - 3; row++) {
-        if (
-          board[row][col] &&
-          board[row][col] === board[row + 1][col] &&
-          board[row][col] === board[row + 2][col] &&
-          board[row][col] === board[row + 3][col]
-        ) {
-          return board[row][col];
+      for (let row = 0; row <= ROWS - K; row++) {
+        if (board[row][col]) {
+          let match = true;
+          for (let i = 1; i < K; i++) {
+            if (board[row][col] !== board[row + i][col]) {
+              match = false;
+              break;
+            }
+          }
+          if (match) return board[row][col];
         }
       }
     }
 
     // Check diagonal (down-right)
-    for (let row = 0; row < ROWS - 3; row++) {
-      for (let col = 0; col < COLS - 3; col++) {
-        if (
-          board[row][col] &&
-          board[row][col] === board[row + 1][col + 1] &&
-          board[row][col] === board[row + 2][col + 2] &&
-          board[row][col] === board[row + 3][col + 3]
-        ) {
-          return board[row][col];
+    for (let row = 0; row <= ROWS - K; row++) {
+      for (let col = 0; col <= COLS - K; col++) {
+        if (board[row][col]) {
+          let match = true;
+          for (let i = 1; i < K; i++) {
+            if (board[row][col] !== board[row + i][col + i]) {
+              match = false;
+              break;
+            }
+          }
+          if (match) return board[row][col];
         }
       }
     }
 
     // Check diagonal (down-left)
-    for (let row = 0; row < ROWS - 3; row++) {
-      for (let col = 3; col < COLS; col++) {
-        if (
-          board[row][col] &&
-          board[row][col] === board[row + 1][col - 1] &&
-          board[row][col] === board[row + 2][col - 2] &&
-          board[row][col] === board[row + 3][col - 3]
-        ) {
-          return board[row][col];
+    for (let row = 0; row <= ROWS - K; row++) {
+      for (let col = K - 1; col < COLS; col++) {
+        if (board[row][col]) {
+          let match = true;
+          for (let i = 1; i < K; i++) {
+            if (board[row][col] !== board[row + i][col - i]) {
+              match = false;
+              break;
+            }
+          }
+          if (match) return board[row][col];
         }
       }
     }
 
-    // Check for draw
+    // Check for draw (board is full)
     if (board[0].every((cell) => cell !== null)) {
       return "draw";
     }
@@ -136,7 +191,12 @@ function GameBoard({ config, onBack }) {
           if (result) {
             setGameOver(true);
             setWinner(result);
-            if (result === "human") {
+            if (result === "draw") {
+              // Calculate score based on number of pieces on board
+              const humanPieces = countPieces(newBoard, "human");
+              const aiPieces = countPieces(newBoard, "ai");
+              setScore({ human: humanPieces, ai: aiPieces });
+            } else if (result === "human") {
               setScore((prev) => ({ ...prev, human: prev.human + 1 }));
             } else if (result === "ai") {
               setScore((prev) => ({ ...prev, ai: prev.ai + 1 }));
@@ -155,13 +215,50 @@ function GameBoard({ config, onBack }) {
   // Handle column click
   const handleColumnClick = (col) => {
     if (gameOver || currentPlayer === "ai" || animatingColumn !== null) return;
+
+    // TEMPORARY: Frontend handles piece placement and win checking
+    // In backend integration, only send move to backend
     dropPiece(col, "human");
+
+    /* BACKEND INTEGRATION - REPLACE handleColumnClick LOGIC
+    // Send human move to backend for validation and game state update
+    fetch('http://localhost:5000/api/move', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        board: board,
+        column: col,
+        player: 'human',
+        algorithm: config.algorithm,
+        useAlphaBeta: config.useAlphaBeta,
+        k: config.k
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      // Backend returns updated game state
+      // Frontend just displays the result
+      const newBoard = data.board;
+      setBoard(newBoard);
+      setLastMove(data.lastMove);
+      
+      if (data.gameOver) {
+        setGameOver(true);
+        setWinner(data.winner);
+        // Update score based on backend response
+      } else {
+        setCurrentPlayer('ai');
+      }
+    });
+    */
   };
 
-  // AI move (mock - will be replaced with backend call)
+  // AI move - will be replaced with backend call
   const makeAIMove = () => {
     if (gameOver) return;
 
+    // TEMPORARY: Mock AI move for simulation only
+    // This entire logic will be replaced by backend integration
     setTimeout(() => {
       // Mock AI move - pick random valid column
       const validColumns = [];
@@ -178,7 +275,7 @@ function GameBoard({ config, onBack }) {
       }
     }, 1000);
 
-    /* BACKEND INTEGRATION - TO BE IMPLEMENTED
+    /* BACKEND INTEGRATION - REPLACE ENTIRE makeAIMove FUNCTION
     // Send board state to backend
     fetch('http://localhost:5000/api/move', {
       method: 'POST',
@@ -187,13 +284,46 @@ function GameBoard({ config, onBack }) {
         board: board,
         algorithm: config.algorithm,
         useAlphaBeta: config.useAlphaBeta,
+        k: config.k,
         player: 'ai'
       })
     })
     .then(res => res.json())
     .then(data => {
-      // data should contain: { column: number, tree: object }
-      dropPiece(data.column, 'ai');
+      // Backend returns: { column: number, tree: object, gameOver: boolean, winner: string|null }
+      const newBoard = board.map(row => [...row]);
+      
+      // Find empty row in the column returned by backend
+      for (let row = ROWS - 1; row >= 0; row--) {
+        if (!newBoard[row][data.column]) {
+          newBoard[row][data.column] = 'ai';
+          setLastMove({ row, col: data.column });
+          playDropSound();
+          
+          setTimeout(() => {
+            setBoard(newBoard);
+            
+            // Backend determines game state
+            if (data.gameOver) {
+              setGameOver(true);
+              setWinner(data.winner);
+              if (data.winner === "draw") {
+                const humanPieces = countPieces(newBoard, "human");
+                const aiPieces = countPieces(newBoard, "ai");
+                setScore({ human: humanPieces, ai: aiPieces });
+              } else if (data.winner === "human") {
+                setScore((prev) => ({ ...prev, human: prev.human + 1 }));
+              } else if (data.winner === "ai") {
+                setScore((prev) => ({ ...prev, ai: prev.ai + 1 }));
+              }
+            } else {
+              setCurrentPlayer("human");
+            }
+          }, 500);
+          break;
+        }
+      }
+      
       // Store tree for visualization
       sessionStorage.setItem('currentTree', JSON.stringify(data.tree));
     });
@@ -224,7 +354,17 @@ function GameBoard({ config, onBack }) {
 
   // Show tree visualization
   const showTree = () => {
-    navigate("/tree", { state: { config, board } });
+    navigate("/tree", {
+      state: {
+        config,
+        board,
+        currentPlayer,
+        gameOver,
+        winner,
+        score,
+        lastMove,
+      },
+    });
   };
 
   return (

@@ -8,15 +8,22 @@ import "./App.css";
 function App() {
   const [gameConfig, setGameConfig] = useState(null);
   const [gameStarted, setGameStarted] = useState(false);
+  const [gameState, setGameState] = useState(null);
 
   const handleStartGame = (config) => {
     setGameConfig(config);
     setGameStarted(true);
+    setGameState(null); // Reset game state for new game
   };
 
   const handleBackToConfig = () => {
     setGameStarted(false);
     setGameConfig(null);
+    setGameState(null);
+  };
+
+  const handleGameStateChange = (state) => {
+    setGameState(state);
   };
 
   return (
@@ -28,7 +35,12 @@ function App() {
             !gameStarted ? (
               <GameConfig onStartGame={handleStartGame} />
             ) : (
-              <GameBoard config={gameConfig} onBack={handleBackToConfig} />
+              <GameBoard
+                config={gameConfig}
+                onBack={handleBackToConfig}
+                initialGameState={gameState}
+                onGameStateChange={handleGameStateChange}
+              />
             )
           }
         />

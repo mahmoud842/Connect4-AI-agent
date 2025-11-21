@@ -3,8 +3,8 @@ import "./GameConfig.css";
 
 function GameConfig({ onStartGame }) {
   const [algorithm, setAlgorithm] = useState("minimax");
-  const [useAlphaBeta, setUseAlphaBeta] = useState(false);
-  const [firstPlayer, setFirstPlayer] = useState("ai");
+  const [useAlphaBeta, setUseAlphaBeta] = useState(true);
+  const [firstPlayer, setFirstPlayer] = useState("human");
   const [boardWidth, setBoardWidth] = useState(7);
   const [boardHeight, setBoardHeight] = useState(6);
   const [k, setK] = useState(4);
