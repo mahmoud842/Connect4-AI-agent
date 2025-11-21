@@ -2,7 +2,7 @@ import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import GameConfig from "./components/GameConfig";
 import GameBoard from "./components/GameBoard";
-import TreeVisualization from "./pages/TreeVisualizationNew";
+import TreeFlow from "./pages/TreeFlow";
 import "./App.css";
 
 function App() {
@@ -32,7 +32,7 @@ function App() {
             )
           }
         />
-        <Route path="/tree" element={<TreeVisualization />} />
+        <Route path="/tree" element={<TreeFlow />} />
       </Routes>
     </Router>
   );

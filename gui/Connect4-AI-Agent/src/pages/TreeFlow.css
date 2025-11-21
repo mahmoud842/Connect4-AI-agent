@@ -1,0 +1,270 @@
+.tree-flow-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+  display: flex;
+  flex-direction: column;
+}
+
+.tree-flow-header {
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+.back-button {
+  padding: 12px 24px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.back-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.tree-title {
+  text-align: center;
+  flex: 1;
+}
+
+.tree-title h1 {
+  color: white;
+  font-size: 2.5rem;
+  margin: 0 0 5px 0;
+}
+
+.tree-subtitle {
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+  font-size: 1rem;
+}
+
+.tree-legend {
+  display: flex;
+  gap: 15px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 12px 20px;
+  border-radius: 10px;
+  backdrop-filter: blur(10px);
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.legend-circle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid;
+}
+
+.legend-circle.max {
+  background: #ff4444;
+  border-color: #cc0000;
+}
+
+.legend-circle.min {
+  background: #ffdd44;
+  border-color: #ffbb00;
+}
+
+.legend-circle.chance {
+  background: #9c27b0;
+  border-color: #7b1fa2;
+}
+
+.legend-circle.leaf {
+  background: #4caf50;
+  border-color: #4caf50;
+}
+
+.tree-flow-wrapper {
+  width: 100%;
+  height: 600px;
+  background: rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.custom-node {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  border: 3px solid;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.custom-node:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+}
+
+.node-type {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.node-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.node-prob {
+  font-size: 0.7rem;
+  font-weight: 600;
+  margin-top: 2px;
+  opacity: 0.9;
+}
+
+.tree-info {
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+.info-card {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 15px;
+  padding: 20px 25px;
+  backdrop-filter: blur(10px);
+  color: white;
+  max-width: 700px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.info-card h3 {
+  margin: 0 0 12px 0;
+  font-size: 1.2rem;
+  color: white;
+}
+
+.info-card ul {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.info-card li {
+  margin-bottom: 8px;
+  padding-left: 0;
+  line-height: 1.5;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.95rem;
+}
+
+.info-card li::before {
+  content: '▸';
+  color: rgba(255, 255, 255, 0.6);
+  flex-shrink: 0;
+}
+
+.info-card strong {
+  color: #fff;
+  font-weight: 600;
+}
+
+/* React Flow custom styles */
+.react-flow__node {
+  padding: 0;
+}
+
+.react-flow__handle {
+  background: transparent;
+  border: none;
+  width: 1px;
+  height: 1px;
+}
+
+.react-flow__edge-path {
+  stroke: #fff;
+  stroke-width: 3;
+}
+
+.react-flow__edge-text {
+  fill: #fff;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.react-flow__edge-textbg {
+  fill: rgba(0, 0, 0, 0.6);
+}
+
+.react-flow__controls {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.react-flow__controls-button {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+}
+
+.react-flow__controls-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.react-flow__minimap {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+@media (max-width: 768px) {
+  .tree-flow-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .tree-title h1 {
+    font-size: 2rem;
+  }
+
+  .tree-legend {
+    justify-content: center;
+  }
+
+  .tree-flow-wrapper {
+    height: calc(100vh - 300px);
+  }
+
+  .custom-node {
+    width: 70px;
+    height: 70px;
+  }
+
+  .node-value {
+    font-size: 1.2rem;
+  }
+}

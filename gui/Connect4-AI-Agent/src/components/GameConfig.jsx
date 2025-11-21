@@ -7,6 +7,7 @@ function GameConfig({ onStartGame }) {
   const [firstPlayer, setFirstPlayer] = useState("ai");
   const [boardWidth, setBoardWidth] = useState(7);
   const [boardHeight, setBoardHeight] = useState(6);
+  const [k, setK] = useState(4);
   const [error, setError] = useState("");
 
   const handleStartGame = () => {
@@ -19,14 +20,19 @@ function GameConfig({ onStartGame }) {
       setError("Height must be at least 6");
       return;
     }
+    if (k < 4) {
+      setError("K must be at least 4");
+      return;
+    }
     setError("");
-    
+
     onStartGame({
       algorithm,
       useAlphaBeta,
       firstPlayer,
       boardWidth: parseInt(boardWidth),
       boardHeight: parseInt(boardHeight),
+      k: parseInt(k),
     });
   };
 
@@ -35,7 +41,9 @@ function GameConfig({ onStartGame }) {
       <div className="config-container">
         <div className="config-header">
           <h1 className="game-title">🎮 Connect 4 AI</h1>
-          <p className="game-subtitle">Configure your ultimate game experience</p>
+          <p className="game-subtitle">
+            Configure your ultimate game experience
+          </p>
         </div>
 
         <div className="config-grid">
@@ -60,6 +68,16 @@ function GameConfig({ onStartGame }) {
                   min="6"
                   value={boardHeight}
                   onChange={(e) => setBoardHeight(e.target.value)}
+                  className="size-input"
+                />
+              </div>
+              <div className="input-group">
+                <label>K (≥4)</label>
+                <input
+                  type="number"
+                  min="4"
+                  value={k}
+                  onChange={(e) => setK(e.target.value)}
                   className="size-input"
                 />
               </div>
