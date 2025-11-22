@@ -26,6 +26,14 @@ function GameBoard({ config, onBack, initialGameState, onGameStateChange }) {
   const [animatingColumn, setAnimatingColumn] = useState(null);
   const [animatingRow, setAnimatingRow] = useState(null);
   const [lastMove, setLastMove] = useState(initialGameState?.lastMove || null);
+  const [showGameOverModal, setShowGameOverModal] = useState(false);
+
+  // Show modal when game ends
+  useEffect(() => {
+    if (gameOver) {
+      setShowGameOverModal(true);
+    }
+  }, [gameOver]);
 
   // Save game state whenever it changes
   useEffect(() => {
@@ -82,252 +90,149 @@ function GameBoard({ config, onBack, initialGameState, onGameStateChange }) {
     noise.stop(now + 0.05);
   };
 
-  // Count pieces for score calculation
-  const countPieces = (board, player) => {
-    let count = 0;
-    for (let row = 0; row < ROWS; row++) {
-      for (let col = 0; col < COLS; col++) {
-        if (board[row][col] === player) count++;
-      }
-    }
-    return count;
-  };
-
-  // Check for winner (using K from config)
-  const checkWinner = (board) => {
-    // Check horizontal
-    for (let row = 0; row < ROWS; row++) {
-      for (let col = 0; col <= COLS - K; col++) {
-        if (board[row][col]) {
-          let match = true;
-          for (let i = 1; i < K; i++) {
-            if (board[row][col] !== board[row][col + i]) {
-              match = false;
-              break;
-            }
-          }
-          if (match) return board[row][col];
-        }
-      }
-    }
-
-    // Check vertical
-    for (let col = 0; col < COLS; col++) {
-      for (let row = 0; row <= ROWS - K; row++) {
-        if (board[row][col]) {
-          let match = true;
-          for (let i = 1; i < K; i++) {
-            if (board[row][col] !== board[row + i][col]) {
-              match = false;
-              break;
-            }
-          }
-          if (match) return board[row][col];
-        }
-      }
-    }
-
-    // Check diagonal (down-right)
-    for (let row = 0; row <= ROWS - K; row++) {
-      for (let col = 0; col <= COLS - K; col++) {
-        if (board[row][col]) {
-          let match = true;
-          for (let i = 1; i < K; i++) {
-            if (board[row][col] !== board[row + i][col + i]) {
-              match = false;
-              break;
-            }
-          }
-          if (match) return board[row][col];
-        }
-      }
-    }
-
-    // Check diagonal (down-left)
-    for (let row = 0; row <= ROWS - K; row++) {
-      for (let col = K - 1; col < COLS; col++) {
-        if (board[row][col]) {
-          let match = true;
-          for (let i = 1; i < K; i++) {
-            if (board[row][col] !== board[row + i][col - i]) {
-              match = false;
-              break;
-            }
-          }
-          if (match) return board[row][col];
-        }
-      }
-    }
-
-    // Check for draw (board is full)
-    if (board[0].every((cell) => cell !== null)) {
-      return "draw";
-    }
-
-    return null;
-  };
-
-  // Drop piece in column
-  const dropPiece = (col, player) => {
-    const newBoard = board.map((row) => [...row]);
-
-    // Find the lowest empty row in the column
-    for (let row = ROWS - 1; row >= 0; row--) {
-      if (!newBoard[row][col]) {
-        newBoard[row][col] = player;
-
-        // Animate the drop
-        setAnimatingColumn(col);
-        setAnimatingRow(row);
-        setLastMove({ row, col });
-        playDropSound();
-
-        setTimeout(() => {
-          setBoard(newBoard);
-          setAnimatingColumn(null);
-          setAnimatingRow(null);
-
-          const result = checkWinner(newBoard);
-          if (result) {
-            setGameOver(true);
-            setWinner(result);
-            if (result === "draw") {
-              // Calculate score based on number of pieces on board
-              const humanPieces = countPieces(newBoard, "human");
-              const aiPieces = countPieces(newBoard, "ai");
-              setScore({ human: humanPieces, ai: aiPieces });
-            } else if (result === "human") {
-              setScore((prev) => ({ ...prev, human: prev.human + 1 }));
-            } else if (result === "ai") {
-              setScore((prev) => ({ ...prev, ai: prev.ai + 1 }));
-            }
-          } else {
-            setCurrentPlayer(player === "human" ? "ai" : "human");
-          }
-        }, 500);
-
-        return true;
-      }
-    }
-    return false;
-  };
-
-  // Handle column click
+  // Handle column click - Backend Integration
   const handleColumnClick = (col) => {
     if (gameOver || currentPlayer === "ai" || animatingColumn !== null) return;
 
-    // TEMPORARY: Frontend handles piece placement and win checking
-    // In backend integration, only send move to backend
-    dropPiece(col, "human");
+    // Check if column is full
+    if (board[0][col]) return;
 
-    /* BACKEND INTEGRATION - REPLACE handleColumnClick LOGIC
-    // Send human move to backend for validation and game state update
-    fetch('http://localhost:5000/api/move', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        board: board,
-        column: col,
-        player: 'human',
-        algorithm: config.algorithm,
-        useAlphaBeta: config.useAlphaBeta,
-        k: config.k
-      })
-    })
-    .then(res => res.json())
-    .then(data => {
-      // Backend returns updated game state
-      // Frontend just displays the result
-      const newBoard = data.board;
-      setBoard(newBoard);
-      setLastMove(data.lastMove);
-      
-      if (data.gameOver) {
-        setGameOver(true);
-        setWinner(data.winner);
-        // Update score based on backend response
-      } else {
-        setCurrentPlayer('ai');
+    // Animate drop first
+    setAnimatingColumn(col);
+
+    // Find the row where piece will land
+    let landingRow = -1;
+    for (let row = ROWS - 1; row >= 0; row--) {
+      if (!board[row][col]) {
+        landingRow = row;
+        break;
       }
-    });
-    */
-  };
+    }
 
-  // AI move - will be replaced with backend call
-  const makeAIMove = () => {
-    if (gameOver) return;
+    if (landingRow === -1) return;
 
-    // TEMPORARY: Mock AI move for simulation only
-    // This entire logic will be replaced by backend integration
+    setAnimatingRow(landingRow);
+    playDropSound();
+
     setTimeout(() => {
-      // Mock AI move - pick random valid column
-      const validColumns = [];
-      for (let col = 0; col < COLS; col++) {
-        if (!board[0][col]) {
-          validColumns.push(col);
-        }
-      }
+      setAnimatingColumn(null);
+      setAnimatingRow(null);
 
-      if (validColumns.length > 0) {
-        const randomCol =
-          validColumns[Math.floor(Math.random() * validColumns.length)];
-        dropPiece(randomCol, "ai");
-      }
-    }, 1000);
-
-    /* BACKEND INTEGRATION - REPLACE ENTIRE makeAIMove FUNCTION
-    // Send board state to backend
-    fetch('http://localhost:5000/api/move', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        board: board,
+      // Send human move to backend for validation and game state update
+      const requestData = {
+        board: [...board].reverse(), // Reverse for backend (backend: row 0 = bottom)
+        column: col,
+        player: "human",
         algorithm: config.algorithm,
         useAlphaBeta: config.useAlphaBeta,
         k: config.k,
-        player: 'ai'
+        firstPlayer: config.firstPlayer,
+      };
+
+      console.log("🎮 Sending HUMAN move request:", requestData);
+
+      fetch("http://127.0.0.1:5000/api/move", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestData),
       })
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("✅ Received HUMAN move response:", data);
+
+          // Backend returns board with row 0 = bottom, reverse it for frontend
+          const newBoard = [...data.board].reverse();
+          setBoard(newBoard);
+          setLastMove({ row: landingRow, col });
+
+          if (data.gameOver) {
+            setGameOver(true);
+            setWinner(data.winner);
+            setScore(data.score);
+          } else {
+            setCurrentPlayer("ai");
+          }
+        })
+        .catch((error) => {
+          console.error("Error making move:", error);
+          alert(
+            "Failed to connect to backend server. Please ensure it is running."
+          );
+        });
+    }, 500);
+  };
+
+  // AI move - Backend Integration
+  const makeAIMove = () => {
+    if (gameOver) return;
+
+    // Send board state to backend
+    const requestData = {
+      board: [...board].reverse(), // Reverse for backend (backend: row 0 = bottom)
+      algorithm: config.algorithm,
+      useAlphaBeta: config.useAlphaBeta,
+      k: config.k,
+      player: "ai",
+      firstPlayer: config.firstPlayer,
+    };
+
+    console.log("🤖 Sending AI move request:", requestData);
+
+    fetch("http://127.0.0.1:5000/api/move", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(requestData),
     })
-    .then(res => res.json())
-    .then(data => {
-      // Backend returns: { column: number, tree: object, gameOver: boolean, winner: string|null }
-      const newBoard = board.map(row => [...row]);
-      
-      // Find empty row in the column returned by backend
-      for (let row = ROWS - 1; row >= 0; row--) {
-        if (!newBoard[row][data.column]) {
-          newBoard[row][data.column] = 'ai';
-          setLastMove({ row, col: data.column });
-          playDropSound();
-          
-          setTimeout(() => {
-            setBoard(newBoard);
-            
-            // Backend determines game state
-            if (data.gameOver) {
-              setGameOver(true);
-              setWinner(data.winner);
-              if (data.winner === "draw") {
-                const humanPieces = countPieces(newBoard, "human");
-                const aiPieces = countPieces(newBoard, "ai");
-                setScore({ human: humanPieces, ai: aiPieces });
-              } else if (data.winner === "human") {
-                setScore((prev) => ({ ...prev, human: prev.human + 1 }));
-              } else if (data.winner === "ai") {
-                setScore((prev) => ({ ...prev, ai: prev.ai + 1 }));
-              }
-            } else {
-              setCurrentPlayer("human");
-            }
-          }, 500);
-          break;
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("✅ Received AI move response:", data);
+
+        // Animate AI move
+        setAnimatingColumn(data.column);
+
+        // Find landing row
+        let landingRow = -1;
+        for (let row = ROWS - 1; row >= 0; row--) {
+          if (!board[row][data.column]) {
+            landingRow = row;
+            break;
+          }
         }
-      }
-      
-      // Store tree for visualization
-      sessionStorage.setItem('currentTree', JSON.stringify(data.tree));
-    });
-    */
+
+        setAnimatingRow(landingRow);
+        playDropSound();
+
+        setTimeout(() => {
+          // Backend returns board with row 0 = bottom, reverse it for frontend
+          const newBoard = [...data.board].reverse();
+          setBoard(newBoard);
+          setAnimatingColumn(null);
+          setAnimatingRow(null);
+          setLastMove({ row: landingRow, col: data.column });
+
+          // Backend determines game state
+          if (data.gameOver) {
+            setGameOver(true);
+            setWinner(data.winner);
+            setScore(data.score);
+          } else {
+            setCurrentPlayer("human");
+          }
+
+          // Store tree for visualization
+          if (data.tree) {
+            sessionStorage.setItem("currentTree", JSON.stringify(data.tree));
+            sessionStorage.setItem("currentConfig", JSON.stringify(config));
+          }
+        }, 500);
+      })
+      .catch((error) => {
+        console.error("Error making AI move:", error);
+        alert(
+          "Failed to connect to backend server. Please ensure it is running."
+        );
+        setCurrentPlayer("human"); // Fallback to human turn
+      });
   };
 
   // Trigger AI move when it's AI's turn
@@ -350,6 +255,7 @@ function GameBoard({ config, onBack, initialGameState, onGameStateChange }) {
     setAnimatingColumn(null);
     setAnimatingRow(null);
     setLastMove(null);
+    setShowGameOverModal(false);
   };
 
   // Show tree visualization
@@ -455,9 +361,16 @@ function GameBoard({ config, onBack, initialGameState, onGameStateChange }) {
         </div>
       </div>
 
-      {gameOver && (
+      {gameOver && showGameOverModal && (
         <div className="game-over-overlay">
           <div className="game-over-modal">
+            <button
+              className="close-modal-button"
+              onClick={() => setShowGameOverModal(false)}
+              aria-label="Close"
+            >
+              ✕
+            </button>
             <div className="game-over-content">
               {winner === "draw" ? (
                 <>

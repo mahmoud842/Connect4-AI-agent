@@ -117,6 +117,13 @@
   cursor: pointer;
 }
 
+.node-move {
+  font-size: 0.65rem;
+  font-weight: 600;
+  margin-bottom: 1px;
+  opacity: 0.85;
+}
+
 .custom-node:hover {
   transform: scale(1.1);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);

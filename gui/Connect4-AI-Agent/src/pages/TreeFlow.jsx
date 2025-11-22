@@ -62,6 +62,9 @@ function CustomNode({ data }) {
           borderColor: style.borderColor,
         }}
       >
+        {data.move !== null && data.move !== undefined && (
+          <div className="node-move">Col {data.move + 1}</div>
+        )}
         {data.player !== "LEAF" && (
           <div className="node-type">{data.player}</div>
         )}
@@ -139,6 +142,7 @@ function convertTreeToFlow(
           ? tree.value.toFixed(tree.player === "LEAF" ? 0 : 1)
           : tree.value,
       probability: tree.probability,
+      move: tree.move,
     },
   });
 
@@ -188,26 +192,30 @@ function convertTreeToFlow(
 const mockMinimaxTree = {
   value: 5,
   player: "MAX",
+  move: null,
   children: [
     {
       value: 3,
       player: "MIN",
+      move: 0,
       children: [
         {
           value: 3,
           player: "MAX",
+          move: 1,
           children: [
-            { value: 3, player: "LEAF", children: [] },
-            { value: 5, player: "LEAF", children: [] },
-            { value: 1, player: "LEAF", children: [] },
+            { value: 3, player: "LEAF", move: 0, children: [] },
+            { value: 5, player: "LEAF", move: 3, children: [] },
+            { value: 1, player: "LEAF", move: 5, children: [] },
           ],
         },
         {
           value: 5,
           player: "MAX",
+          move: 2,
           children: [
-            { value: 2, player: "LEAF", children: [] },
-            { value: 5, player: "LEAF", children: [] },
+            { value: 2, player: "LEAF", move: 1, children: [] },
+            { value: 5, player: "LEAF", move: 4, children: [] },
           ],
         },
       ],
@@ -215,22 +223,25 @@ const mockMinimaxTree = {
     {
       value: 5,
       player: "MIN",
+      move: 3,
       children: [
         {
           value: 4,
           player: "MAX",
+          move: 0,
           children: [
-            { value: 4, player: "LEAF", children: [] },
-            { value: 6, player: "LEAF", children: [] },
+            { value: 4, player: "LEAF", move: 2, children: [] },
+            { value: 6, player: "LEAF", move: 6, children: [] },
           ],
         },
         {
           value: 5,
           player: "MAX",
+          move: 4,
           children: [
-            { value: 5, player: "LEAF", children: [] },
-            { value: 7, player: "LEAF", children: [] },
-            { value: 3, player: "LEAF", children: [] },
+            { value: 5, player: "LEAF", move: 1, children: [] },
+            { value: 7, player: "LEAF", move: 3, children: [] },
+            { value: 3, player: "LEAF", move: 5, children: [] },
           ],
         },
       ],
@@ -238,21 +249,24 @@ const mockMinimaxTree = {
     {
       value: 9,
       player: "MIN",
+      move: 6,
       children: [
         {
           value: 8,
           player: "MAX",
+          move: 2,
           children: [
-            { value: 8, player: "LEAF", children: [] },
-            { value: 2, player: "LEAF", children: [] },
+            { value: 8, player: "LEAF", move: 4, children: [] },
+            { value: 2, player: "LEAF", move: 0, children: [] },
           ],
         },
         {
           value: 9,
           player: "MAX",
+          move: 5,
           children: [
-            { value: 9, player: "LEAF", children: [] },
-            { value: 6, player: "LEAF", children: [] },
+            { value: 9, player: "LEAF", move: 6, children: [] },
+            { value: 6, player: "LEAF", move: 1, children: [] },
           ],
         },
       ],
@@ -263,26 +277,30 @@ const mockMinimaxTree = {
 const mockExpectiminimaxTree = {
   value: 4.8,
   player: "MAX",
+  move: null,
   children: [
     {
       value: 4.5,
       player: "CHANCE",
+      move: 0,
       children: [
         {
           value: 3.2,
           player: "MIN",
+          move: 1,
           children: [
-            { value: 3.2, player: "LEAF", children: [] },
-            { value: 4.1, player: "LEAF", children: [] },
+            { value: 3.2, player: "LEAF", move: 2, children: [] },
+            { value: 4.1, player: "LEAF", move: 4, children: [] },
           ],
         },
         {
           value: 5.1,
           player: "MIN",
+          move: 3,
           children: [
-            { value: 5.1, player: "LEAF", children: [] },
-            { value: 6.2, player: "LEAF", children: [] },
-            { value: 4.8, player: "LEAF", children: [] },
+            { value: 5.1, player: "LEAF", move: 0, children: [] },
+            { value: 6.2, player: "LEAF", move: 5, children: [] },
+            { value: 4.8, player: "LEAF", move: 6, children: [] },
           ],
         },
       ],
@@ -290,21 +308,24 @@ const mockExpectiminimaxTree = {
     {
       value: 4.8,
       player: "CHANCE",
+      move: 2,
       children: [
         {
           value: 4.8,
           player: "MIN",
+          move: 1,
           children: [
-            { value: 4.8, player: "LEAF", children: [] },
-            { value: 3.9, player: "LEAF", children: [] },
+            { value: 4.8, player: "LEAF", move: 3, children: [] },
+            { value: 3.9, player: "LEAF", move: 0, children: [] },
           ],
         },
         {
           value: 5.5,
           player: "MIN",
+          move: 4,
           children: [
-            { value: 5.5, player: "LEAF", children: [] },
-            { value: 7.2, player: "LEAF", children: [] },
+            { value: 5.5, player: "LEAF", move: 2, children: [] },
+            { value: 7.2, player: "LEAF", move: 6, children: [] },
           ],
         },
       ],
@@ -312,22 +333,25 @@ const mockExpectiminimaxTree = {
     {
       value: 5.2,
       player: "CHANCE",
+      move: 5,
       children: [
         {
           value: 5.2,
           player: "MIN",
+          move: 3,
           children: [
-            { value: 5.2, player: "LEAF", children: [] },
-            { value: 6.1, player: "LEAF", children: [] },
+            { value: 5.2, player: "LEAF", move: 1, children: [] },
+            { value: 6.1, player: "LEAF", move: 4, children: [] },
           ],
         },
         {
           value: 4.9,
           player: "MIN",
+          move: 6,
           children: [
-            { value: 4.9, player: "LEAF", children: [] },
-            { value: 5.8, player: "LEAF", children: [] },
-            { value: 3.7, player: "LEAF", children: [] },
+            { value: 4.9, player: "LEAF", move: 0, children: [] },
+            { value: 5.8, player: "LEAF", move: 2, children: [] },
+            { value: 3.7, player: "LEAF", move: 5, children: [] },
           ],
         },
       ],
@@ -340,8 +364,36 @@ function TreeFlow() {
   const location = useLocation();
   const config = location.state?.config || { algorithm: "minimax" };
 
-  const isExpectiminimax = config.algorithm === "expectiminimax";
-  const treeData = isExpectiminimax ? mockExpectiminimaxTree : mockMinimaxTree;
+  // Try to load tree from sessionStorage (from backend) or use mock data
+  const loadTreeData = () => {
+    try {
+      const storedTree = sessionStorage.getItem("currentTree");
+      const storedConfig = sessionStorage.getItem("currentConfig");
+
+      if (storedTree && storedConfig) {
+        const parsedConfig = JSON.parse(storedConfig);
+        const parsedTree = JSON.parse(storedTree);
+
+        console.log("Loaded tree from backend:", parsedTree);
+        return {
+          tree: parsedTree,
+          config: parsedConfig,
+        };
+      }
+    } catch (error) {
+      console.error("Error loading tree from sessionStorage:", error);
+    }
+
+    // Fallback to mock data
+    const isExpectiminimax = config.algorithm === "expectiminimax";
+    return {
+      tree: isExpectiminimax ? mockExpectiminimaxTree : mockMinimaxTree,
+      config: config,
+    };
+  };
+
+  const { tree: treeData, config: treeConfig } = loadTreeData();
+  const isExpectiminimax = treeConfig.algorithm === "expectiminimax";
 
   // Convert tree to flow format
   const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
@@ -384,7 +436,7 @@ function TreeFlow() {
           <div className="tree-title">
             <h1>{isExpectiminimax ? "Expectiminimax" : "Minimax"} Tree</h1>
             <p className="tree-subtitle">
-              {config.useAlphaBeta && "⚡ Alpha-Beta Pruning Enabled"}
+              {treeConfig.useAlphaBeta && "⚡ Alpha-Beta Pruning Enabled"}
             </p>
           </div>
           <div className="tree-legend">

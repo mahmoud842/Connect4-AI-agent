@@ -5,21 +5,11 @@ function GameConfig({ onStartGame }) {
   const [algorithm, setAlgorithm] = useState("minimax");
   const [useAlphaBeta, setUseAlphaBeta] = useState(true);
   const [firstPlayer, setFirstPlayer] = useState("human");
-  const [boardWidth, setBoardWidth] = useState(7);
-  const [boardHeight, setBoardHeight] = useState(6);
   const [k, setK] = useState(4);
   const [error, setError] = useState("");
 
   const handleStartGame = () => {
-    // Validate board dimensions
-    if (boardWidth < 7) {
-      setError("Width must be at least 7");
-      return;
-    }
-    if (boardHeight < 6) {
-      setError("Height must be at least 6");
-      return;
-    }
+    // Validate K value
     if (k < 4) {
       setError("K must be at least 4");
       return;
@@ -30,8 +20,8 @@ function GameConfig({ onStartGame }) {
       algorithm,
       useAlphaBeta,
       firstPlayer,
-      boardWidth: parseInt(boardWidth),
-      boardHeight: parseInt(boardHeight),
+      boardWidth: 7,
+      boardHeight: 6,
       k: parseInt(k),
     });
   };
@@ -47,30 +37,10 @@ function GameConfig({ onStartGame }) {
         </div>
 
         <div className="config-grid">
-          {/* Board Size Section */}
+          {/* K Value Section */}
           <div className="config-section board-size-section">
-            <h3>📐 Board Size</h3>
+            <h3>🎯 K Value</h3>
             <div className="size-inputs">
-              <div className="input-group">
-                <label>Width (≥7)</label>
-                <input
-                  type="number"
-                  min="7"
-                  value={boardWidth}
-                  onChange={(e) => setBoardWidth(e.target.value)}
-                  className="size-input"
-                />
-              </div>
-              <div className="input-group">
-                <label>Height (≥6)</label>
-                <input
-                  type="number"
-                  min="6"
-                  value={boardHeight}
-                  onChange={(e) => setBoardHeight(e.target.value)}
-                  className="size-input"
-                />
-              </div>
               <div className="input-group">
                 <label>K (≥4)</label>
                 <input
