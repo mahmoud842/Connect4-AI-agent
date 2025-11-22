@@ -22,8 +22,10 @@ def max_value(state: Connect4State, depth, alpha, beta):
             alpha = max(alpha, rv)
 
         if (alpha >= beta):
+            state.value = rv
             return rv, best_action
 
+    state.value = rv
     return rv, best_action
 
 def min_value(state: Connect4State, depth, alpha, beta):
@@ -40,6 +42,8 @@ def min_value(state: Connect4State, depth, alpha, beta):
             beta = min(beta, rv)
 
         if (alpha >= beta):
+            state.value = rv
             return rv, best_action
 
+    state.value = rv
     return rv, best_action
