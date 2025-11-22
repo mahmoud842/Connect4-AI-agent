@@ -19,16 +19,16 @@ function CustomNode({ data }) {
   const getNodeStyle = () => {
     if (data.player === "MAX") {
       return {
-        backgroundColor: "#ff4444",
-        color: "#fff",
-        borderColor: "#cc0000",
+        backgroundColor: "#ffdd44",
+        color: "#000",
+        borderColor: "#ffbb00",
       };
     }
     if (data.player === "MIN") {
       return {
-        backgroundColor: "#ffdd44",
-        color: "#000",
-        borderColor: "#ffbb00",
+        backgroundColor: "#ff4444",
+        color: "#fff",
+        borderColor: "#cc0000",
       };
     }
     if (data.player === "CHANCE") {
@@ -69,6 +69,9 @@ function CustomNode({ data }) {
           <div className="node-type">{data.player}</div>
         )}
         <div className="node-value">{data.value}</div>
+        {data.expected !== undefined && data.expected !== null && (
+          <div className="node-expected">E={data.expected}</div>
+        )}
         {data.probability && (
           <div className="node-prob">p={data.probability}</div>
         )}
@@ -141,6 +144,10 @@ function convertTreeToFlow(
         typeof tree.value === "number"
           ? tree.value.toFixed(tree.player === "LEAF" ? 0 : 1)
           : tree.value,
+      expected:
+        typeof tree.expected === "number"
+          ? tree.expected.toFixed(tree.player === "LEAF" ? 0 : 1)
+          : tree.expected,
       probability: tree.probability,
       move: tree.move,
     },
@@ -483,8 +490,8 @@ function TreeFlow() {
               <Controls />
               <MiniMap
                 nodeColor={(node) => {
-                  if (node.data.player === "MAX") return "#ff4444";
-                  if (node.data.player === "MIN") return "#ffdd44";
+                  if (node.data.player === "MAX") return "#ffdd44";
+                  if (node.data.player === "MIN") return "#ff4444";
                   if (node.data.player === "CHANCE") return "#9c27b0";
                   return "#4caf50";
                 }}
@@ -498,46 +505,6 @@ function TreeFlow() {
               Loading tree...
             </div>
           )}
-        </div>
-
-        <div className="tree-info">
-          <div className="info-card">
-            <h3>📖 How to Read This Tree</h3>
-            <ul>
-              <li>
-                <strong>🔴 MAX nodes (red):</strong> AI tries to maximize the
-                score
-              </li>
-              <li>
-                <strong>🟡 MIN nodes (yellow):</strong> Opponent tries to
-                minimize the score
-              </li>
-              {isExpectiminimax && (
-                <li>
-                  <strong>🟣 CHANCE nodes (purple):</strong> Probabilistic
-                  outcomes
-                </li>
-              )}
-              <li>
-                <strong>🟢 LEAF nodes (green):</strong> Terminal states with
-                evaluation scores
-              </li>
-              <li>
-                <strong>Values:</strong> Evaluation scores at each state
-              </li>
-              {!isExpectiminimax && (
-                <li>
-                  <strong>L/R labels:</strong> Left and Right branches
-                </li>
-              )}
-              <li>
-                <strong>Pan:</strong> Click and drag to move around
-              </li>
-              <li>
-                <strong>Zoom:</strong> Use mouse wheel or controls
-              </li>
-            </ul>
-          </div>
         </div>
       </div>
     </ReactFlowProvider>

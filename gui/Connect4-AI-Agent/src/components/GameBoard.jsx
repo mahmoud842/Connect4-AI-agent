@@ -112,7 +112,9 @@ function GameBoard({ config, onBack, initialGameState, onGameStateChange }) {
     if (landingRow === -1) return;
 
     setAnimatingRow(landingRow);
-    playDropSound();
+
+    // Delay sound to match animation (500ms)
+    setTimeout(() => playDropSound(), 500);
 
     setTimeout(() => {
       setAnimatingColumn(null);
@@ -200,7 +202,9 @@ function GameBoard({ config, onBack, initialGameState, onGameStateChange }) {
         }
 
         setAnimatingRow(landingRow);
-        playDropSound();
+
+        // Delay sound to match animation (500ms)
+        setTimeout(() => playDropSound(), 500);
 
         setTimeout(() => {
           // Backend returns board with row 0 = bottom, reverse it for frontend

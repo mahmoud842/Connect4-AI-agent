@@ -22,13 +22,15 @@ def max_value(state: Connect4State, depth, alpha, beta):
             alpha = max(alpha, rv)
 
         if (alpha >= beta):
+            rv , best_action = state.calulate_value()
             return rv, best_action
 
+    rv , best_action = state.calulate_value()
     return rv, best_action
 
 def min_value(state: Connect4State, depth, alpha, beta):
     if (state.is_terminal() or depth == 0):
-        return state.heuristic(), None
+       return state.heuristic(), None
     
     rv = INF
     best_action = None
@@ -40,6 +42,8 @@ def min_value(state: Connect4State, depth, alpha, beta):
             beta = min(beta, rv)
 
         if (alpha >= beta):
-            return rv, best_action
+                rv , best_action = state.calulate_value()
+                return rv, best_action
 
+    rv , best_action = state.calulate_value()
     return rv, best_action

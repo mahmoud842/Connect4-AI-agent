@@ -109,6 +109,12 @@ def state_to_tree_json(state, is_expectiminimax=False):
         'children': []
     }
 
+    # Add expected_value for expectiminimax from state.expected_value
+    if is_expectiminimax:
+        if hasattr(state, 'expected_value') and state.expected_value is not None:
+            node['expected'] = state.expected_value
+        # Don't add expected key at all if it doesn't exist or is None
+
     # Add probability for chance nodes (if applicable)
     if is_expectiminimax and player_type == 'CHANCE':
         # Equal probability for each child in expectiminimax
@@ -254,20 +260,40 @@ def make_move():
         if action is None:
             return jsonify({'error': 'No valid moves available'}), 400
 
+        # Print tree structure BEFORE any conversion
+        print(f"\n🌳 TREE STRUCTURE FROM ALGORITHM:")
+        print(f"Algorithm: {'Expectiminimax' if is_expectiminimax else 'Minimax'}")
+        print(f"Root state children count: {len(root_state.children)}")
+        
+        def print_tree_structure(state, depth=0, max_depth=3):
+            if depth > max_depth:
+                return
+            indent = "  " * depth
+            print(f"{indent}Node: player={state.player}, children={len(state.children)}, is_terminal={state.is_terminal()}, action={state.action}")
+            for i, child in enumerate(state.children[:3]):  # Only first 3 children
+                print_tree_structure(child, depth + 1, max_depth)
+            if len(state.children) > 3:
+                print(f"{indent}  ... and {len(state.children) - 3} more children")
+        
+        print_tree_structure(root_state)
+        print("="*60 + "\n")
+
+        # Convert state tree to JSON BEFORE calling transition to avoid modifying root_state
+        tree = state_to_tree_json(root_state, is_expectiminimax)
+
         # Apply the AI's chosen move to get the resulting board
-        final_state = root_state
-        for child in root_state.children:
-            if child.action == action:
-                final_state = child
-                break
+        
+        # Check if column is valid
+        if action not in root_state.available_actions():
+            return jsonify({'error': 'Invalid column'}), 400
+        
+        # Apply the move
+        final_state = root_state.transition(action)
 
         new_board = final_state.board
 
         # Check if game is over using state's terminal_score
         game_over, winner, score = check_game_over(final_state)
-
-        # Convert state tree to JSON
-        tree = state_to_tree_json(root_state, is_expectiminimax)
 
         response = {
             'board': board_to_frontend_format(new_board),

@@ -16,6 +16,7 @@ class Connect4State:
         self.alpha = alpha
         self.beta = beta
         self.value = None
+        self.expected_value = None
         self.children = []
 
     def copy(self):
@@ -131,3 +132,64 @@ class Connect4State:
         self.value = score
 
         return score
+    def calulate_value(self):
+        if self.value is not None:
+            return self.value
+        bestMove = None
+        if self.player == 1:
+            rv = -INF
+            for c in self.children:
+                c.calulate_value()
+            for c in self.children:
+                v = self.calculate_child_expected(c,self.children)
+                if rv < v:
+                    rv = v
+                    bestMove = c.action
+            self.value = rv
+            if self.parent is None:
+                self.expected_value = rv
+            return rv ,bestMove  
+        else:
+            rv = INF
+            for c in self.children:
+                c.calulate_value()
+            for c in self.children:
+                c.calulate_value()
+                v = self.calculate_child_expected(c,self.children)
+                if rv > v:
+                    rv = v
+                    bestMove = c.action
+            self.value = rv
+            if self.parent is None:
+                self.expected_value = rv
+            return rv , bestMove
+        
+    def calculate_child_expected(self, child,children):
+        if child.value is not None:
+            if child.is_terminal():
+                child.value = child.heuristic()
+            else:
+                child.calulate_value()    
+        
+        left = self.get_child(children,child.action-1)
+        right = self.get_child(children,child.action+1)
+        
+        if left is None and right is None:
+                child.expected_value = child.value
+                return child.value
+        elif left is None:
+                child.expected_value = right.value * 0.4 + 0.6 * child.value
+                return child.expected_value
+        elif right is None:
+                child.expected_value = left.value * 0.4 + 0.6 * child.value
+                return child.expected_value
+        else:
+                child.expected_value = left.value * 0.2 + 0.2 * right.value + 0.6 * child.value
+                return child.expected_value
+           
+        
+    def get_child(self,children,action):
+        for child in children:
+            if child.action == action:
+                return child
+        return None
