@@ -16,6 +16,7 @@ class Connect4State:
         self.alpha = alpha
         self.beta = beta
         self.value = None
+        self.children = []
 
     def copy(self):
         return Connect4State(board=self.board, player=self.player, action=self.action, parent=self.parent)
@@ -33,6 +34,7 @@ class Connect4State:
         r = self._next_open_row(action)
         child = Connect4State(self.board, -self.player, action, self, alpha, beta)
         child.board[r][action] = self.player
+        self.children.append(child)
         return child
 
     def neighbors(self):
