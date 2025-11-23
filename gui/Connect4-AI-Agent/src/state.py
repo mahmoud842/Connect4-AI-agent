@@ -139,8 +139,6 @@ class Connect4State:
         if self.player == 1:
             rv = -INF
             for c in self.children:
-                c.calulate_value()
-            for c in self.children:
                 v = self.calculate_child_expected(c,self.children)
                 if rv < v:
                     rv = v
@@ -152,9 +150,6 @@ class Connect4State:
         else:
             rv = INF
             for c in self.children:
-                c.calulate_value()
-            for c in self.children:
-                c.calulate_value()
                 v = self.calculate_child_expected(c,self.children)
                 if rv > v:
                     rv = v
